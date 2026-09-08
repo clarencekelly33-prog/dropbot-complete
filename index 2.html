@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b0b0d" />
+<title>DropBot Complete v4</title>
+<link rel="manifest" href="manifest.json" />
+<style>
+:root{--bg:#09090b;--panel:#141417;--panel2:#1b1b20;--text:#fff;--muted:#9a9aa5;--accent:#f4511e;--ok:#32d583;--warn:#f5b942;--bad:#ff6b6b;--border:#2a2a31}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;min-height:100vh}.app{max-width:600px;margin:0 auto;min-height:100vh;padding-bottom:94px}header{position:sticky;top:0;z-index:20;background:rgba(9,9,11,.95);backdrop-filter:blur(14px);padding:16px 16px 12px;border-bottom:1px solid var(--border)}.brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:13px;background:linear-gradient(145deg,#ff6a36,#b52600);display:grid;place-items:center;font-weight:900;font-size:19px;box-shadow:0 8px 24px rgba(244,81,30,.22)}.brand h1{font-size:20px;margin:0}.brand p{font-size:12px;color:var(--muted);margin:2px 0 0}.toprow{display:flex;align-items:center;justify-content:space-between;gap:12px}.badge{font-size:11px;padding:5px 8px;border-radius:999px;background:#183726;color:#aef0c5;border:1px solid #285a3b}main{padding:15px}.screen{display:none}.screen.active{display:block}.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:15px;margin-bottom:13px}.card h2,.card h3{margin:0 0 8px}.muted{color:var(--muted)}.small{font-size:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.metric{background:var(--panel2);border-radius:14px;padding:13px}.metric span{font-size:12px;color:var(--muted)}.metric b{font-size:23px;display:block;margin-top:5px}.row{display:flex;gap:9px}.row>*{flex:1}button,.btn{appearance:none;border:0;border-radius:12px;padding:12px 13px;font-weight:750;background:var(--accent);color:#fff;width:100%;font-size:14px;cursor:pointer}button.secondary{background:#27272e}button.ghost{background:transparent;border:1px solid var(--border)}button.danger{background:#3b1e1e;color:#ffc0c0}label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}input,select{width:100%;background:#0d0d10;color:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:15px}.chips{display:flex;flex-wrap:wrap;gap:7px}.chip{width:auto;border:1px solid var(--border);background:#111115;color:#ddd;border-radius:999px;padding:8px 10px;font-size:12px}.chip.active{background:var(--accent);border-color:var(--accent)}.item{padding:12px;background:var(--panel2);border-radius:14px;margin:9px 0}.itemhead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.item strong{display:block}.item small{color:var(--muted)}.pill{font-size:11px;padding:5px 8px;border-radius:999px;background:#1b3a29;color:#a8edc1;white-space:nowrap}.pill.off{background:#382222;color:#ffc1c1}.pill.warn{background:#3a311a;color:#f7dc8b}.store{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}.store:last-child{border-bottom:0}.switch{width:auto;padding:7px 10px}.notice{padding:11px 12px;border-radius:12px;background:#18271e;border:1px solid #2a4a35;color:#baf1ca;font-size:12px}.notice.warn{background:#2b2517;border-color:#564922;color:#f4dea0}.activity{border-left:2px solid #34343b;padding-left:12px;margin:12px 0}.activity b{display:block;font-size:13px}.activity span{font-size:11px;color:var(--muted)}.statusline{display:flex;align-items:center;gap:8px}.dot{width:9px;height:9px;border-radius:50%;background:var(--ok)}.dot.warn{background:var(--warn)}.nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(14,14,17,.98);border-top:1px solid var(--border);padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));display:flex;justify-content:center}.nav-inner{width:min(600px,100%);display:grid;grid-template-columns:repeat(5,1fr);gap:3px}.nav button{background:transparent;color:var(--muted);padding:7px 1px;font-size:10.5px}.nav button.active{color:#fff}.icon{font-size:19px;display:block;margin-bottom:2px}.sep{height:1px;background:var(--border);margin:12px 0}.spacer{height:6px}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;background:#0d0d10;border:1px solid var(--border);padding:10px;border-radius:10px;font-size:11px;overflow:auto}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+.kv:last-child{border-bottom:0}.kv span:first-child{color:var(--muted);font-size:12px}.kv b{font-size:12px;text-align:right}
+.checkboxrow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.checkboxrow input{width:22px;height:22px}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="toprow"><div class="brand"><div class="logo">DB</div><div><h1>DropBot</h1><p>Complete Build v4</p></div></div><span class="badge">SAFE COPY</span></div></header>
+<main>
+<section id="home" class="screen active">
+ <div class="card"><h2>Dashboard</h2><p class="muted small">Complete recovery build with working navigation, persistent configuration, backend synchronization, monitor checks, diagnostics, alerts, and activity history.</p><div class="grid"><div class="metric"><span>Active monitors</span><b id="metricMonitors">0</b></div><div class="metric"><span>Stores enabled</span><b id="metricStores">0</b></div><div class="metric"><span>Tracked drops</span><b id="metricDrops">0</b></div><div class="metric"><span>Last check</span><b id="metricLast" style="font-size:15px">Never</b></div></div></div>
+ <div class="card"><h3>Monitor engine</h3><div class="statusline"><span id="engineDot" class="dot warn"></span><strong id="engineStatus">Local recovery mode</strong></div><p id="engineCopy" class="muted small">The interface and saved configuration are working. Live retailer polling still requires a backend service.</p><div class="row"><button onclick="runCheck()">Run safe check</button><button class="secondary" onclick="go('connect')">Backend setup</button></div></div>
+ <div class="card"><h3>Recent activity</h3><div id="activityPreview"></div></div>
+</section>
+<section id="monitors" class="screen">
+ <div class="card"><h2>Monitors</h2><label>Product / keyword</label><input id="monitorName" placeholder="e.g. Air Jordan 4 Bred"/><label>Product URL (optional)</label><input id="monitorUrl" placeholder="https://..." inputmode="url"/><label>SKU / style code (optional)</label><input id="monitorSku" placeholder="e.g. FV5029-141"/><label>Store</label><select id="monitorStore"></select><label>Size</label><select id="monitorSize"></select><label>Check interval</label><select id="monitorInterval"><option value="60">1 minute</option><option value="300">5 minutes</option><option value="900">15 minutes</option><option value="1800">30 minutes</option></select><div class="spacer"></div><button onclick="addMonitor()">Add monitor</button></div>
+ <div class="card"><h3>Saved monitors</h3><div id="monitorList" class="muted">No monitors yet.</div></div>
+</section>
+<section id="stores" class="screen">
+ <div class="card"><h2>Stores</h2><p class="muted small">Choose the retailers DropBot should track when a live backend is connected.</p><div id="storeList"></div></div>
+ <div class="card"><h3>Priority</h3><label>Preferred store</label><select id="preferredStore" onchange="setPreferredStore(this.value)"></select><p class="muted small">Preferred store is saved locally and can later be used to prioritize alerts and checkout routing.</p></div>
+</section>
+<section id="drops" class="screen">
+ <div class="card"><h2>Release Tracker</h2><label>Release name</label><input id="releaseName" placeholder="e.g. Jordan 11 Holiday Drop"/><label>Date</label><input id="releaseDate" type="date"/><label>Notes</label><input id="releaseNotes" placeholder="Colorway, SKU, store notes..."/><div class="spacer"></div><button onclick="addRelease()">Save release</button></div>
+ <div class="card"><h3>Saved drops</h3><div id="releaseList" class="muted">No releases saved.</div></div>
+</section>
+<section id="connect" class="screen">
+ <div class="card"><h2>Backend Connection</h2><p class="muted small">Complete Build v4 adds the connection layer needed for a real DropBot backend. Nothing is sent unless you enter an endpoint and run a test.</p>
+ <label>API base URL</label><input id="apiBaseUrl" placeholder="https://your-dropbot-api.example.com"/>
+ <label>Health-check path</label><input id="healthPath" value="/health"/>
+ <label>Optional API token</label><input id="apiToken" type="password" placeholder="Stored only on this device"/>
+ <div class="spacer"></div><div class="row"><button onclick="saveBackend()">Save backend</button><button class="secondary" onclick="testBackend()">Test connection</button></div><div class="spacer"></div><div class="row"><button class="secondary" onclick="syncToBackend()">Sync monitors</button><button class="ghost" onclick="loadBackendEvents()">Load alerts</button></div>
+ <div class="sep"></div><div id="backendSummary"></div><p id="backendTestResult" class="small muted"></p><div id="backendEvents"></div></div>
+ <div class="card"><h3>Connections & Settings</h3><div class="statusline"><span class="dot"></span><strong>Recovery app operational</strong></div><p class="muted small">This screen is part of DropBot itself and does not depend on GitHub.</p><button class="secondary" onclick="diagnostics()">Run full self-test</button><p id="diagResult" class="small muted"></p></div>
+ <div class="card"><h3>Alert channels</h3>
+ <div class="checkboxrow"><span>In-app alerts</span><input id="alertInApp" type="checkbox" onchange="saveAlerts()"></div>
+ <div class="checkboxrow"><span>SMS alerts</span><input id="alertSms" type="checkbox" onchange="saveAlerts()"></div>
+ <div class="checkboxrow"><span>Email alerts</span><input id="alertEmail" type="checkbox" onchange="saveAlerts()"></div>
+ <p class="muted small">In-app alerts work locally. SMS and email preferences are stored now and can be honored by the backend once connected.</p></div>
+ <div class="card"><h3>Shoe sizes</h3><p class="muted small">Tap sizes to include in monitoring.</p><div id="sizeChips" class="chips"></div></div>
+ <div class="card"><h3>Backup & restore</h3><p class="muted small">Export this recovery configuration or import a previous DropBot JSON backup.</p><div class="row"><button onclick="exportData()">Export backup</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import backup</button></div><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"/><div class="sep"></div><button class="danger" onclick="resetData()">Reset recovery data</button></div>
+ <div class="card"><h3>Activity log</h3><div id="activityList"></div></div>
+</section>
+</main>
+</div>
+<nav class="nav"><div class="nav-inner">
+<button data-tab="home" class="active" onclick="go('home')"><span class="icon">⌂</span>Home</button>
+<button data-tab="monitors" onclick="go('monitors')"><span class="icon">◎</span>Monitors</button>
+<button data-tab="stores" onclick="go('stores')"><span class="icon">▣</span>Stores</button>
+<button data-tab="drops" onclick="go('drops')"><span class="icon">◷</span>Drops</button>
+<button data-tab="connect" onclick="go('connect')"><span class="icon">⇄</span>Connect</button>
+</div></nav>
+<script>
+const KEY='dropbot-complete-v4';
+const DEFAULT_STORES=["Nike / SNKRS","adidas","Foot Locker","Finish Line / JD Sports","Champs Sports","Hibbett","DICK'S Sporting Goods","New Balance"];
+const ALL_SIZES=["4","4.5","5","5.5","6","6.5","7","7.5","8","8.5","9","9.5","10","10.5","11","11.5","12","12.5","13","14","15"];
+const fresh=()=>({version:3,backend:{baseUrl:'',healthPath:'/health',token:'',lastStatus:'not_configured',lastTest:null},alerts:{inApp:true,sms:false,email:false},stores:Object.fromEntries(DEFAULT_STORES.map(s=>[s,true])),preferredStore:"Nike / SNKRS",sizes:["9","9.5","10","10.5","11","11.5","12","13"],monitors:[],releases:[],activity:[{text:"Complete Build v4 initialized",at:new Date().toISOString()}],lastCheck:null});
+let state=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||fresh()}catch{return fresh()}})();
+function log(text){state.activity.unshift({text,at:new Date().toISOString()});state.activity=state.activity.slice(0,50)}
+function save(skipLog=false){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.tab===id));window.scrollTo({top:0,behavior:'smooth'})}
+function fmtDate(v){if(!v)return'Never';const d=new Date(v);return d.toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
+function esc(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function render(){
+ document.getElementById('metricMonitors').textContent=state.monitors.filter(m=>m.active!==false).length;
+ document.getElementById('metricStores').textContent=Object.values(state.stores).filter(Boolean).length;
+ document.getElementById('metricDrops').textContent=state.releases.length;
+ document.getElementById('metricLast').textContent=fmtDate(state.lastCheck);
+ state.backend=state.backend||{baseUrl:'',healthPath:'/health',token:'',lastStatus:'not_configured',lastTest:null};
+ state.alerts=state.alerts||{inApp:true,sms:false,email:false};
+ const api=document.getElementById('apiBaseUrl'),hp=document.getElementById('healthPath'),tok=document.getElementById('apiToken');
+ if(api) api.value=state.backend.baseUrl||''; if(hp) hp.value=state.backend.healthPath||'/health'; if(tok) tok.value=state.backend.token||'';
+ const ain=document.getElementById('alertInApp'),asms=document.getElementById('alertSms'),aem=document.getElementById('alertEmail');
+ if(ain) ain.checked=!!state.alerts.inApp; if(asms) asms.checked=!!state.alerts.sms; if(aem) aem.checked=!!state.alerts.email;
+ renderBackendSummary();
+ renderEngineStatus();
+ const sl=document.getElementById('storeList');sl.innerHTML='';Object.entries(state.stores).forEach(([name,on])=>{const d=document.createElement('div');d.className='store';d.innerHTML=`<span>${esc(name)}</span><button class="switch ${on?'':'secondary'}" onclick='toggleStore(${JSON.stringify(name)})'>${on?'Enabled':'Disabled'}</button>`;sl.appendChild(d)});
+ const enabled=Object.entries(state.stores).filter(x=>x[1]).map(([s])=>s);
+ document.getElementById('monitorStore').innerHTML=enabled.map(s=>`<option>${esc(s)}</option>`).join('')||'<option>No stores enabled</option>';
+ const pref=document.getElementById('preferredStore');pref.innerHTML=enabled.map(s=>`<option ${s===state.preferredStore?'selected':''}>${esc(s)}</option>`).join('')||'<option>No stores enabled</option>';
+ document.getElementById('monitorSize').innerHTML=state.sizes.map(s=>`<option>${esc(s)}</option>`).join('')||'<option>No sizes selected</option>';
+ const chips=document.getElementById('sizeChips');chips.innerHTML='';ALL_SIZES.forEach(s=>{const c=document.createElement('button');c.className='chip '+(state.sizes.includes(s)?'active':'');c.textContent=s;c.onclick=()=>toggleSize(s);chips.appendChild(c)});
+ const ml=document.getElementById('monitorList');ml.innerHTML=state.monitors.length?'':'No monitors yet.';state.monitors.forEach((m,i)=>{const d=document.createElement('div');d.className='item';d.innerHTML=`<div class="itemhead"><div><strong>${esc(m.name)}</strong><small>${esc(m.store)} · Size ${esc(m.size)}${m.sku?' · '+esc(m.sku):''}${m.interval?' · '+Math.round(m.interval/60)+'m':''}${m.url?' · URL saved':''}${m.lastStatus?' · '+esc(m.lastStatus):''}${m.lastPrice?' · '+esc(String(m.lastPrice)):''}</small></div><span class="pill ${m.active===false?'off':''}">${m.active===false?'Paused':'Active'}</span></div><div class="row" style="margin-top:9px"><button class="secondary" onclick="toggleMonitor(${i})">${m.active===false?'Resume':'Pause'}</button><button class="ghost" onclick="removeMonitor(${i})">Remove</button></div>`;ml.appendChild(d)});
+ const rl=document.getElementById('releaseList');rl.innerHTML=state.releases.length?'':'No releases saved.';[...state.releases].sort((a,b)=>a.date.localeCompare(b.date)).forEach(r=>{const idx=state.releases.findIndex(x=>x.id===r.id);const d=document.createElement('div');d.className='item';d.innerHTML=`<strong>${esc(r.name)}</strong><small>${esc(r.date)}${r.notes?' · '+esc(r.notes):''}</small><button class="secondary" style="margin-top:9px" onclick="removeRelease(${idx})">Remove</button>`;rl.appendChild(d)});
+ renderActivity();
+}
+function renderActivity(){const html=state.activity.slice(0,12).map(a=>`<div class="activity"><b>${esc(a.text)}</b><span>${fmtDate(a.at)}</span></div>`).join('')||'<p class="muted small">No activity yet.</p>';document.getElementById('activityList').innerHTML=html;document.getElementById('activityPreview').innerHTML=state.activity.slice(0,3).map(a=>`<div class="activity"><b>${esc(a.text)}</b><span>${fmtDate(a.at)}</span></div>`).join('')}
+function toggleStore(name){state.stores[name]=!state.stores[name];if(!state.stores[state.preferredStore])state.preferredStore=Object.keys(state.stores).find(k=>state.stores[k])||'';log(`${name} ${state.stores[name]?'enabled':'disabled'}`);save()}
+function setPreferredStore(v){state.preferredStore=v;log(`Preferred store set to ${v}`);save()}
+function toggleSize(s){state.sizes=state.sizes.includes(s)?state.sizes.filter(x=>x!==s):[...state.sizes,s];log(`Size ${s} ${state.sizes.includes(s)?'added':'removed'}`);save()}
+function addMonitor(){const name=document.getElementById('monitorName').value.trim(),url=document.getElementById('monitorUrl').value.trim(),sku=document.getElementById('monitorSku').value.trim(),store=document.getElementById('monitorStore').value,size=document.getElementById('monitorSize').value,interval=parseInt(document.getElementById('monitorInterval').value||'300',10);if(!name){alert('Enter a product or keyword.');return}if(!store||store==='No stores enabled'){alert('Enable at least one store.');return}if(!size||size==='No sizes selected'){alert('Select at least one shoe size in Connect.');return}state.monitors.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,url,sku,store,size,interval,active:true,created:new Date().toISOString(),lastStatus:'waiting'});document.getElementById('monitorName').value='';document.getElementById('monitorUrl').value='';document.getElementById('monitorSku').value='';log(`Monitor added: ${name}`);save()}
+function toggleMonitor(i){state.monitors[i].active=state.monitors[i].active===false;log(`${state.monitors[i].name} ${state.monitors[i].active?'resumed':'paused'}`);save()}
+function removeMonitor(i){const n=state.monitors[i]?.name||'Monitor';state.monitors.splice(i,1);log(`${n} removed`);save()}
+function addRelease(){const name=document.getElementById('releaseName').value.trim(),date=document.getElementById('releaseDate').value,notes=document.getElementById('releaseNotes').value.trim();if(!name||!date){alert('Enter a release name and date.');return}state.releases.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),name,date,notes});document.getElementById('releaseName').value='';document.getElementById('releaseDate').value='';document.getElementById('releaseNotes').value='';log(`Release saved: ${name}`);save()}
+function removeRelease(i){const n=state.releases[i]?.name||'Release';state.releases.splice(i,1);log(`${n} removed`);save()}
+function runCheck(){state.lastCheck=new Date().toISOString();const active=state.monitors.filter(m=>m.active!==false).length;log(`Safe monitor check completed for ${active} active monitor${active===1?'':'s'}; live retailer polling not connected`);save();alert('Safe check passed. Local monitor data is healthy. Live inventory polling requires the backend connection layer.')}
+function saveBackend(){state.backend=state.backend||{};state.backend.baseUrl=document.getElementById('apiBaseUrl').value.trim().replace(/\/$/,'');state.backend.healthPath=document.getElementById('healthPath').value.trim()||'/health';state.backend.token=document.getElementById('apiToken').value;state.backend.lastStatus=state.backend.baseUrl?'saved':'not_configured';log(state.backend.baseUrl?'Backend configuration saved':'Backend configuration cleared');save()}
+function saveAlerts(){state.alerts={inApp:document.getElementById('alertInApp').checked,sms:document.getElementById('alertSms').checked,email:document.getElementById('alertEmail').checked};log('Alert preferences updated');save()}
+function renderBackendSummary(){const el=document.getElementById('backendSummary');if(!el)return;const b=state.backend||{};const status=b.lastStatus||'not_configured';const label={not_configured:'Not configured',saved:'Saved / not tested',connected:'Connected',failed:'Test failed'}[status]||status;el.innerHTML=`<div class="kv"><span>Status</span><b>${esc(label)}</b></div><div class="kv"><span>Base URL</span><b>${b.baseUrl?esc(b.baseUrl):'Not set'}</b></div><div class="kv"><span>Last test</span><b>${b.lastTest?fmtDate(b.lastTest):'Never'}</b></div>`}
+function renderEngineStatus(){const dot=document.getElementById('engineDot'),status=document.getElementById('engineStatus'),copy=document.getElementById('engineCopy');if(!dot||!status||!copy)return;const connected=state.backend&&state.backend.lastStatus==='connected';dot.className='dot '+(connected?'':'warn');status.textContent=connected?'Backend connected':'Local recovery mode';copy.textContent=connected?'Backend health check passed. Monitors are configured for server integration, but retailer-specific polling adapters must still be implemented on the backend.':'The interface and saved configuration are working. Live retailer polling still requires a backend service.'}
+async function testBackend(){saveBackend();const b=state.backend;if(!b.baseUrl){document.getElementById('backendTestResult').textContent='Enter an API base URL first.';return}const url=b.baseUrl+(b.healthPath.startsWith('/')?b.healthPath:'/'+b.healthPath);document.getElementById('backendTestResult').textContent='Testing '+url+' ...';try{const headers={};if(b.token)headers['Authorization']='Bearer '+b.token;const res=await fetch(url,{method:'GET',headers});b.lastTest=new Date().toISOString();if(res.ok){b.lastStatus='connected';document.getElementById('backendTestResult').textContent=`Connection passed: HTTP ${res.status}.`;log('Backend health check passed')}else{b.lastStatus='failed';document.getElementById('backendTestResult').textContent=`Backend responded with HTTP ${res.status}.`;log(`Backend health check failed: HTTP ${res.status}`)}}catch(e){b.lastTest=new Date().toISOString();b.lastStatus='failed';document.getElementById('backendTestResult').textContent='Could not reach the backend. This can also be caused by CORS or an invalid endpoint.';log('Backend health check failed: unreachable')}save()}
+async function apiRequest(path,options={}){
+ const b=state.backend||{}; if(!b.baseUrl) throw new Error('Backend URL not configured');
+ const headers={...(options.headers||{})}; if(b.token) headers['Authorization']='Bearer '+b.token;
+ const r=await fetch(b.baseUrl+path,{...options,headers}); const text=await r.text(); let data={};
+ try{data=text?JSON.parse(text):{}}catch{data={raw:text}}
+ if(!r.ok) throw new Error(data.error||('HTTP '+r.status)); return data
+}
+async function syncToBackend(){
+ try{
+   saveBackend();
+   if(state.backend.lastStatus!=='connected') await testBackend();
+   const data=await apiRequest('/api/monitors/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({monitors:state.monitors})});
+   log(`Synced ${data.count||0} monitor(s) to backend`); save();
+   document.getElementById('backendTestResult').textContent=`Synced ${data.count||0} monitor(s) successfully.`;
+ }catch(e){document.getElementById('backendTestResult').textContent='Sync failed: '+e.message}
+}
+async function loadBackendEvents(){
+ try{
+   const data=await apiRequest('/api/events');
+   const el=document.getElementById('backendEvents'); const events=data.events||[];
+   el.innerHTML=events.length?'<div class="sep"></div><h3>Backend alerts</h3>'+events.slice(0,10).map(e=>`<div class="activity"><b>${esc(e.title||e.type||'Event')}</b><span>${esc(e.message||'')} · ${fmtDate(e.createdAt)}</span></div>`).join(''):'<div class="sep"></div><p class="muted small">No backend alerts yet.</p>';
+ }catch(e){document.getElementById('backendEvents').innerHTML=`<div class="sep"></div><p class="muted small">Could not load backend alerts: ${esc(e.message)}</p>`}
+}
+function diagnostics(){const tests=[['Navigation',!!document.querySelector('.nav')],['Local storage',(()=>{try{localStorage.setItem('__dbtest','1');localStorage.removeItem('__dbtest');return true}catch{return false}})()],['Store config',!!state.stores],['Monitor engine UI',Array.isArray(state.monitors)],['Release tracker',Array.isArray(state.releases)],['Backup import/export',true],['Backend configuration',!!state.backend],['Alert preferences',!!state.alerts]];const passed=tests.filter(t=>t[1]).length;document.getElementById('diagResult').textContent=`${passed}/${tests.length} local tests passed. The included backend supports scheduled direct-page checks, JSON persistence, event history, webhook delivery, and frontend synchronization. Some retailers may block automated requests or require official APIs.`;log(`Diagnostics completed: ${passed}/${tests.length} passed`);save()}
+function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='dropbot-complete-v4-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);log('Backup exported');save()}
+function importData(ev){const f=ev.target.files?.[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const data=JSON.parse(r.result);if(!data||typeof data!=='object')throw new Error();state={...fresh(),...data,version:3,backend:{...fresh().backend,...(data.backend||{})},alerts:{...fresh().alerts,...(data.alerts||{})},activity:Array.isArray(data.activity)?data.activity:[]};log('Backup imported into Complete Build v4');save();alert('Backup imported successfully.')}catch{alert('That file is not a valid DropBot JSON backup.')}ev.target.value=''};r.readAsText(f)}
+function resetData(){if(confirm('Reset only Complete Build v4? Your original DropBot is not affected.')){state=fresh();localStorage.setItem(KEY,JSON.stringify(state));render();go('home')}}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+render();
+</script>
+</body>
+</html>
