@@ -84,6 +84,7 @@ function inferAvailability(text){
   return {status:'unknown',message:'Page fetched, but availability could not be determined reliably.'};
 }
 async function checkOne(m){
+    console.log('[DropBot] checking monitor:', m.name, m.store, m.url);
   const checkedAt=new Date().toISOString();
   if(!m.url) return {...m,status:'needs-url',message:'Add a direct product URL to perform a server check.',checkedAt,price:null};
   let u; try{u=new URL(m.url)}catch{return {...m,status:'invalid-url',message:'Product URL is invalid.',checkedAt,price:null}};
