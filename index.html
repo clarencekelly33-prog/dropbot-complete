@@ -112,6 +112,22 @@ function saveAlerts(){state.alerts={inApp:document.getElementById('alertInApp').
 function renderBackendSummary(){const el=document.getElementById('backendSummary');if(!el)return;const b=state.backend||{};const status=b.lastStatus||'not_configured';const label={not_configured:'Not configured',saved:'Saved / not tested',connected:'Connected',failed:'Test failed'}[status]||status;el.innerHTML=`<div class="kv"><span>Status</span><b>${esc(label)}</b></div><div class="kv"><span>Base URL</span><b>${b.baseUrl?esc(b.baseUrl):'Not set'}</b></div><div class="kv"><span>Last test</span><b>${b.lastTest?fmtDate(b.lastTest):'Never'}</b></div>`}
 function renderEngineStatus(){const dot=document.getElementById('engineDot'),status=document.getElementById('engineStatus'),copy=document.getElementById('engineCopy');if(!dot||!status||!copy)return;const connected=state.backend&&state.backend.lastStatus==='connected';dot.className='dot '+(connected?'':'warn');status.textContent=connected?'Backend connected':'Local recovery mode';copy.textContent=connected?'Backend health check passed. Monitors are configured for server integration, but retailer-specific polling adapters must still be implemented on the backend.':'The interface and saved configuration are working. Live retailer polling still requires a backend service.'}
 async function testBackend(){saveBackend();const b=state.backend;if(!b.baseUrl){document.getElementById('backendTestResult').textContent='Enter an API base URL first.';return}const url=b.baseUrl+(b.healthPath.startsWith('/')?b.healthPath:'/'+b.healthPath);document.getElementById('backendTestResult').textContent='Testing '+url+' ...';try{const headers={};if(b.token)headers['Authorization']='Bearer '+b.token;const res=await fetch(url,{method:'GET',headers});b.lastTest=new Date().toISOString();if(res.ok){b.lastStatus='connected';document.getElementById('backendTestResult').textContent=`Connection passed: HTTP ${res.status}.`;log('Backend health check passed')}else{b.lastStatus='failed';document.getElementById('backendTestResult').textContent=`Backend responded with HTTP ${res.status}.`;log(`Backend health check failed: HTTP ${res.status}`)}}catch(e){b.lastTest=new Date().toISOString();b.lastStatus='failed';document.getElementById('backendTestResult').textContent='Could not reach the backend. This can also be caused by CORS or an invalid endpoint.';log('Backend health check failed: unreachable')}save()}
+async function runBackendCheck(){
+  try{
+    saveBackend();
+    if(state.backend.lastStatus!=='connected') await testBackend();
+    await apiRequest('/api/monitors/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({monitors:state.monitors})});
+    const data=await apiRequest('/api/checks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    state.lastCheck=new Date().toISOString();
+    save();
+    render();
+    log(`Backend check completed for ${data.count||0} monitor(s)`);
+    return data;
+  }catch(e){
+    log(`Backend check failed: ${e.message}`);
+    alert(`Check failed: ${e.message}`);
+  }
+}
 async function apiRequest(path,options={}){
  const b=state.backend||{}; if(!b.baseUrl) throw new Error('Backend URL not configured');
  const headers={...(options.headers||{})}; if(b.token) headers['Authorization']='Bearer '+b.token;
