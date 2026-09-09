@@ -98,6 +98,7 @@ async function checkNikeSNKRS(m){
   console.log('[DropBot] Nike/SNKRS check:', m.name || m.url);
 
   return null;
+  console.log('[DropBot] Nike/SNKRS adapter reached generic fallback');
 }
 async function checkOne(m){
   if(m.store === 'Nike / SNKRS'){
