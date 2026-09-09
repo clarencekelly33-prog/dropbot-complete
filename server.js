@@ -83,7 +83,27 @@ function inferAvailability(text){
   if(positive.some(x=>t.includes(x))) return {status:'available',message:'Page contains an availability indicator.'};
   return {status:'unknown',message:'Page fetched, but availability could not be determined reliably.'};
 }
+async function checkNikeSNKRS(m){
+  const checkedAt = new Date().toISOString();
+
+  if(!m.url){
+    return {
+      ...m,
+      status:'needs-url',
+      message:'Nike / SNKRS monitor requires a product URL',
+      checkedAt
+    };
+  }
+
+  console.log('[DropBot] Nike/SNKRS check:', m.name || m.url);
+
+  return null;
+}
 async function checkOne(m){
+  if(m.store === 'Nike / SNKRS'){
+  const nikeResult = await checkNikeSNKRS(m);
+  if(nikeResult) return nikeResult;
+}
     console.log('[DropBot] checking monitor:', m.name, m.store, m.url);
   const checkedAt=new Date().toISOString();
   if(!m.url) return {...m,status:'needs-url',message:'Add a direct product URL to perform a server check.',checkedAt,price:null};
