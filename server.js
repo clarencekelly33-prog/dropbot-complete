@@ -7,6 +7,10 @@ const PORT = Number(process.env.PORT || 3000);
 const HOST = process.env.HOST || '0.0.0.0';
 const API_TOKEN = process.env.DROPBOT_API_TOKEN || '';
 const WEBHOOK_URL = process.env.ALERT_WEBHOOK_URL || '';
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || '';
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || '';
+const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER || '';
+const ALERT_TO_NUMBER = process.env.ALERT_TO_NUMBER || '';
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname,'data');
 const DATA_FILE = path.join(DATA_DIR,'dropbot.json');
 const MIN_INTERVAL = Math.max(60, Number(process.env.MIN_CHECK_INTERVAL_SECONDS || 60));
@@ -71,6 +75,31 @@ async function webhook(event){
     await fetch(WEBHOOK_URL,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(event)});
   }catch(e){ console.error('Webhook delivery failed:',e.message); }
 }
+async function sendSMS(event){
+  if(!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER || !ALERT_TO_NUMBER) return;
+
+  const body = new URLSearchParams({
+    To: ALERT_TO_NUMBER,
+    From: TWILIO_FROM_NUMBER,
+    Body: `${event.title}: ${event.message}`
+  }).toString();
+
+  const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
+
+  try{
+    await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,{
+      method:'POST',
+      headers:{
+        'Authorization':`Basic ${auth}`,
+        'Content-Type':'application/x-www-form-urlencoded'
+      },
+      body
+    });
+  }catch(e){
+    console.error('SMS delivery failed',e);
+  }
+}
+
 function extractPrice(text){
   const m=text.match(/(?:\$|USD\s*)\s?([0-9]{1,5}(?:\.[0-9]{2})?)/i);
   return m ? '$'+m[1] : null;
@@ -149,7 +178,7 @@ async function runChecks(monitors){
     if(idx>=0) db.monitors[idx]={...db.monitors[idx],lastChecked:result.checkedAt,lastStatus:result.status,lastPrice:result.price,lastMessage:result.message};
     if(result.status==='available' && before!=='available'){
       const event={type:'availability',title:m.name+' may be available',message:`${m.store||'Retailer'} · Size ${m.size||'n/a'}${result.price?' · '+result.price:''}`,meta:{monitorId:m.id,url:m.url},createdAt:new Date().toISOString()};
-      addEvent(event.type,event.title,event.message,event.meta); await webhook(event);
+      addEvent(event.type,event.title,event.message,event.meta); await webhook(event); await sendSMS(event);
     }
   }
   db.lastSchedulerRun=new Date().toISOString(); save(); return results;
@@ -183,7 +212,7 @@ const server=http.createServer(async(req,res)=>{
     }
     if(req.method==='POST' && u.pathname==='/api/events/test'){
       const event={type:'test',title:'DropBot test alert',message:'Backend alert delivery test',meta:{},createdAt:new Date().toISOString()};
-      addEvent(event.type,event.title,event.message,event.meta); await webhook(event);
+      addEvent(event.type,event.title,event.message,event.meta); await webhook(event); await sendSMS(event);
       return json(res,200,{ok:true,event});
     }
 
