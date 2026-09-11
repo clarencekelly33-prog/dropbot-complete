@@ -49,6 +49,7 @@
  <div class="checkboxrow"><span>In-app alerts</span><input id="alertInApp" type="checkbox" onchange="saveAlerts()"></div>
  <div class="checkboxrow"><span>SMS alerts</span><input id="alertSms" type="checkbox" onchange="saveAlerts()"></div>
  <div class="checkboxrow"><span>Email alerts</span><input id="alertEmail" type="checkbox" onchange="saveAlerts()"></div>
+<div class="spacer"></div><button class="secondary" onclick="sendTestSms()">Send test SMS</button><p id="smsTestResult" class="small muted"></p>
  <p class="muted small">In-app alerts work locally. SMS and email preferences are stored now and can be honored by the backend once connected.</p></div>
  <div class="card"><h3>Shoe sizes</h3><p class="muted small">Tap sizes to include in monitoring.</p><div id="sizeChips" class="chips"></div></div>
  <div class="card"><h3>Backup & restore</h3><p class="muted small">Export this recovery configuration or import a previous DropBot JSON backup.</p><div class="row"><button onclick="exportData()">Export backup</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import backup</button></div><input id="importFile" type="file" accept="application/json" style="display:none" onchange="importData(event)"/><div class="sep"></div><button class="danger" onclick="resetData()">Reset recovery data</button></div>
@@ -126,6 +127,19 @@ async function runBackendCheck(){
   }catch(e){
     log(`Backend check failed: ${e.message}`);
     alert(`Check failed: ${e.message}`);
+  }
+}
+async function sendTestSms(){
+  const el=document.getElementById('smsTestResult');
+  try{
+    saveBackend();
+    const data=await apiRequest('/api/events/test',{method:'POST'});
+    if(el) el.textContent='Test SMS requested successfully.';
+    log('Test SMS requested.');
+    return data;
+  }catch(e){
+    if(el) el.textContent='Test SMS failed: '+e.message;
+    log('Test SMS failed: '+e.message);
   }
 }
 async function apiRequest(path,options={}){
