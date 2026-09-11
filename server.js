@@ -87,7 +87,7 @@ async function sendSMS(event){
   const auth = Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64');
 
   try{
-    await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,{
+    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`,{
       method:'POST',
       headers:{
         'Authorization':`Basic ${auth}`,
@@ -95,6 +95,7 @@ async function sendSMS(event){
       },
       body
     });
+    if(!response.ok) console.error('Twilio SMS error', response.status, await response.text());
   }catch(e){
     console.error('SMS delivery failed',e);
   }
