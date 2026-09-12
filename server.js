@@ -76,7 +76,7 @@ async function webhook(event){
   }catch(e){ console.error('Webhook delivery failed:',e.message); }
 }
 async function sendSMS(event){
-  if(!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER || !ALERT_TO_NUMBER) return;
+if(!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER || !ALERT_TO_NUMBER) return {ok:false,stage:'config',error:'Missing SMS configuration'};
 
   const body = new URLSearchParams({
     To: ALERT_TO_NUMBER,
