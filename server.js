@@ -120,16 +120,174 @@ async function checkNikeSNKRS(m){
     return {
       ...m,
       status:'needs-url',
-      message:'Nike / SNKRS monitor requires a product URL',
-      checkedAt
+      message:'Nike / SNKRS monitor requires a direct Nike product URL.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  let u;
+  try{
+    u = new URL(m.url);
+  }catch{
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'Nike / SNKRS product URL is invalid.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  const host = u.hostname.toLowerCase();
+
+  if(!(host === 'nike.com' || host.endsWith('.nike.com'))){
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'Nike / SNKRS monitor requires a nike.com product URL.',
+      checkedAt,
+      price:null
     };
   }
 
   console.log('[DropBot] Nike/SNKRS check:', m.name || m.url);
 
-  console.log('[DropBot] Nike/SNKRS adapter reached generic fallback');
-  return null;
-  
+  try{
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 12000);
+
+    const r = await fetch(u.toString(), {
+      redirect:'follow',
+      signal:ctrl.signal,
+      headers:{
+        'user-agent':'DropBot/4.0 (+product availability monitor; respectful polling)',
+        'accept':'text/html,application/xhtml+xml,application/json;q=0.8,*/*;q=0.5',
+        'accept-language':'en-US,en;q=0.8'
+      }
+    });
+
+    clearTimeout(timeout);
+
+    const text = (await r.text()).slice(0,1000000);
+
+    if(!r.ok){
+      return {
+        ...m,
+        status:'http-' + r.status,
+        message:'Nike returned HTTP ' + r.status + '.',
+        checkedAt,
+        price:null
+      };
+    }
+
+    const lower = text.toLowerCase();
+    const price = extractPrice(text);
+
+    if(m.sku && !lower.includes(String(m.sku).toLowerCase())){
+      return {
+        ...m,
+        status:'product-mismatch',
+        message:'Nike page loaded, but the saved SKU/style code was not found.',
+        checkedAt,
+        price
+      };
+    }
+
+    const target = String(m.size || '').trim();
+
+    if(target){
+      const sizeAvailable =
+        lower.includes(`"size":"${target.toLowerCase()}"`) &&
+        (
+          lower.includes('"available":true') ||
+          lower.includes('"instock":true') ||
+          lower.includes('"sellable":true')
+        );
+
+      const sizeUnavailable =
+        lower.includes(`"size":"${target.toLowerCase()}"`) &&
+        (
+          lower.includes('"available":false') ||
+          lower.includes('"instock":false') ||
+          lower.includes('"sellable":false')
+        );
+
+      if(sizeAvailable){
+        return {
+          ...m,
+          status:'available',
+          message:`Nike shows size ${target} as available.`,
+          checkedAt,
+          price
+        };
+      }
+
+      if(sizeUnavailable){
+        return {
+          ...m,
+          status:'out-of-stock',
+          message:`Nike shows size ${target} as unavailable.`,
+          checkedAt,
+          price
+        };
+      }
+    }
+
+    const negative = [
+      'sold out',
+      'currently unavailable',
+      'notify me',
+      'coming soon'
+    ];
+
+    if(negative.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'out-of-stock',
+        message:'Nike page indicates the product is not currently available.',
+        checkedAt,
+        price
+      };
+    }
+
+    const positive = [
+      'add to bag',
+      'select size',
+      'available now'
+    ];
+
+    if(!target && positive.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'available',
+        message:'Nike page shows a purchase/availability indicator.',
+        checkedAt,
+        price
+      };
+    }
+
+    return {
+      ...m,
+      status:'unknown',
+      message:target
+        ? `Nike page loaded, but availability for size ${target} could not be confirmed reliably.`
+        : 'Nike page loaded, but availability could not be confirmed reliably.',
+      checkedAt,
+      price
+    };
+
+  }catch(e){
+    return {
+      ...m,
+      status:e.name === 'AbortError' ? 'timeout' : 'unreachable',
+      message:e.name === 'AbortError'
+        ? 'Nike request timed out.'
+        : 'Could not fetch Nike product page: ' + e.message,
+      checkedAt,
+      price:null
+    };
+  }
 }
 async function checkOne(m){
   if(m.store === 'Nike / SNKRS'){
