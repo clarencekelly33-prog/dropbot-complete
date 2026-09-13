@@ -908,21 +908,40 @@ async function checkChampsSports(m){
         checkedAt,
         price
       };
-    }    if(target){
-      const sizeTokens = [
-        `"size":"${target}"`,
-        `"displaySize":"${target}"`,
-        `"value":"${target}"`,
-        `size ${target}`
-      ];
+    }    
+    if(target){
+  const sizeTokens = [
+    `"size":"${target}"`,
+    `"displaySize":"${target}"`,
+    `"value":"${target}"`,
+    `size ${target}`
+  ];
 
-      const hasSize = sizeTokens.some(x => lower.includes(x));
+  let sizeFound = false;
 
-      if(hasSize && (
-        lower.includes('"available":true') ||
-        lower.includes('"instock":true') ||
-        lower.includes('"status":"available"')
-      )){
+  for(const token of sizeTokens){
+    let pos = lower.indexOf(token);
+
+    while(pos !== -1){
+      sizeFound = true;
+
+      const start = Math.max(0,pos - 220);
+      const end = Math.min(lower.length,pos + token.length + 220);
+      const nearby = lower.slice(start,end);
+
+      const available =
+        nearby.includes('"available":true') ||
+        nearby.includes('"instock":true') ||
+        nearby.includes('"inventoryStatus":"in_stock"') ||
+        nearby.includes('"status":"available"');
+
+      const unavailable =
+        nearby.includes('"available":false') ||
+        nearby.includes('"instock":false') ||
+        nearby.includes('"inventoryStatus":"out_of_stock"') ||
+        nearby.includes('"status":"unavailable"');
+
+      if(available && !unavailable){
         return {
           ...m,
           status:'available',
@@ -932,11 +951,7 @@ async function checkChampsSports(m){
         };
       }
 
-      if(hasSize && (
-        lower.includes('"available":false') ||
-        lower.includes('"instock":false') ||
-        lower.includes('"status":"unavailable"')
-      )){
+      if(unavailable && !available){
         return {
           ...m,
           status:'out-of-stock',
@@ -945,7 +960,22 @@ async function checkChampsSports(m){
           price
         };
       }
-    }    const negative = [
+
+      pos = lower.indexOf(token,pos + token.length);
+    }
+  }
+
+  return {
+    ...m,
+    status:'unknown',
+    message:sizeFound
+      ? `Champs Sports page contains size ${m.size}, but its availability could not be confirmed reliably.`
+      : `Champs Sports page loaded, but size ${m.size} was not found in the page data.`,
+    checkedAt,
+    price
+  };
+}
+    const negative = [
       'sold out',
       'out of stock',
       'currently unavailable',
