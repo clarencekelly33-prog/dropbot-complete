@@ -119,7 +119,18 @@ async function runBackendCheck(){
     if(state.backend.lastStatus!=='connected') await testBackend();
     await apiRequest('/api/monitors/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({monitors:state.monitors})});
     const data=await apiRequest('/api/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
-    state.lastCheck=new Date().toISOString();
+    if(Array.isArray(data.results)){
+  state.monitors=state.monitors.map(m=>{
+    const r=data.results.find(x=>x.id===m.id);
+    return r ? {
+      ...m,
+      lastStatus:r.status,
+      lastMessage:r.message,
+      lastChecked:r.checkedAt,
+      lastPrice:r.price
+    } : m;
+  });}
+}state.lastCheck=new Date().toISOString();
     save();
     render();
     log(`Backend check completed for ${data.count||0} monitor(s)`);
