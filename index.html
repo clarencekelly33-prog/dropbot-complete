@@ -135,7 +135,7 @@ state.lastCheck=new Date().toISOString();
     save();
     render();
      log(`Backend check completed for ${(data.results||[]).length} monitor(s)`);
-    return dat
+    return data;
   }catch(e){
     log(`Backend check failed: ${e.message}`);
     alert(`Check failed: ${e.message}`);
