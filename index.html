@@ -132,9 +132,9 @@ async function runBackendCheck(){
   });
 }
 state.lastCheck=new Date().toISOString();
-    save();
-    render();
-     log(`Backend check completed for ${(data.results||[]).length} monitor(s)`);
+  log(`Backend check completed for ${(data.results||[]).length} monitor(s)`);
+  save();
+render();
     return data;
   }catch(e){
     log(`Backend check failed: ${e.message}`);
