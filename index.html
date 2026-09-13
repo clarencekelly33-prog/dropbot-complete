@@ -118,7 +118,7 @@ async function runBackendCheck(){
     saveBackend();
     if(state.backend.lastStatus!=='connected') await testBackend();
     await apiRequest('/api/monitors/sync',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({monitors:state.monitors})});
-    const data=await apiRequest('/api/checks',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    const data=await apiRequest('/api/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
     state.lastCheck=new Date().toISOString();
     save();
     render();
