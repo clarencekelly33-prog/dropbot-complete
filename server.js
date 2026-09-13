@@ -305,10 +305,185 @@ async function checkNikeSNKRS(m){
     };
   }
 }
+async function checkAdidas(m){
+  const checkedAt = new Date().toISOString();
+
+  if(!m.url){
+    return {
+      ...m,
+      status:'needs-url',
+      message:'adidas monitor requires a direct adidas product URL.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  let u;
+  try{
+    u = new URL(m.url);
+  }catch{
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'adidas product URL is invalid.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  const host = u.hostname.toLowerCase();
+
+  if(!(host === 'adidas.com' || host.endsWith('.adidas.com'))){
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'adidas monitor requires an adidas.com product URL.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  try{
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 12000);
+
+    const r = await fetch(u.toString(), {
+      redirect:'follow',
+      signal:ctrl.signal,
+      headers:{
+        'user-agent':'DropBot/4.0 (+product availability monitor; respectful polling)',
+        'accept':'text/html,application/xhtml+xml,application/json;q=0.8,*/*;q=0.5',
+        'accept-language':'en-US,en;q=0.8'
+      }
+    });
+
+    clearTimeout(timeout);
+
+    const text = (await r.text()).slice(0,1000000);
+
+    if(!r.ok){
+      return {
+        ...m,
+        status:'http-' + r.status,
+        message:'adidas returned HTTP ' + r.status + '.',
+        checkedAt,
+        price:null
+      };
+    }
+
+    const lower = text.toLowerCase();
+    const price = extractPrice(text);
+
+    if(m.sku && !lower.includes(String(m.sku).toLowerCase())){
+      return {
+        ...m,
+        status:'product-mismatch',
+        message:'adidas page loaded, but the saved SKU/style code was not found.',
+        checkedAt,
+        price
+      };
+    }
+
+    const target = String(m.size || '').trim().toLowerCase();
+
+    if(target){
+      const hasSize = lower.includes(`"size":"${target}"`);
+
+      if(hasSize && (
+        lower.includes('"available":true') ||
+        lower.includes('"in_stock":true') ||
+        lower.includes('"availability":"in_stock"') ||
+        lower.includes('"status":"in_stock"')
+      )){
+        return {
+          ...m,
+          status:'available',
+          message:`adidas shows size ${m.size} as available.`,
+          checkedAt,
+          price
+        };
+      }
+
+      if(hasSize && (
+        lower.includes('"available":false') ||
+        lower.includes('"in_stock":false') ||
+        lower.includes('"availability":"out_of_stock"') ||
+        lower.includes('"status":"out_of_stock"')
+      )){
+        return {
+          ...m,
+          status:'out-of-stock',
+          message:`adidas shows size ${m.size} as unavailable.`,
+          checkedAt,
+          price
+        };
+      }
+    }
+
+    const negative = [
+      'sold out',
+      'out of stock',
+      'currently unavailable',
+      'notify me'
+    ];
+
+    if(negative.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'out-of-stock',
+        message:'adidas page indicates the product is not currently available.',
+        checkedAt,
+        price
+      };
+    }
+
+    const positive = [
+      'add to bag',
+      'add to cart',
+      'select size',
+      'available now'
+    ];
+
+    if(!target && positive.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'available',
+        message:'adidas page shows a purchase/availability indicator.',
+        checkedAt,
+        price
+      };
+    }
+
+    return {
+      ...m,
+      status:'unknown',
+      message:target
+        ? `adidas page loaded, but availability for size ${m.size} could not be confirmed reliably.`
+        : 'adidas page loaded, but availability could not be confirmed reliably.',
+      checkedAt,
+      price
+    };
+
+  }catch(e){
+    return {
+      ...m,
+      status:e.name === 'AbortError' ? 'timeout' : 'unreachable',
+      message:e.name === 'AbortError'
+        ? 'adidas request timed out.'
+        : 'Could not fetch adidas product page: ' + e.message,
+      checkedAt,
+      price:null
+    };
+  }
+}
 async function checkOne(m){
   if(m.store === 'Nike / SNKRS'){
   const nikeResult = await checkNikeSNKRS(m);
   if(nikeResult) return nikeResult;
+}
+if(m.store === 'adidas'){
+  const adidasResult = await checkAdidas(m);
+  if(adidasResult) return adidasResult;
 }
     console.log('[DropBot] checking monitor:', m.name, m.store, m.url);
   const checkedAt=new Date().toISOString();
