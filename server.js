@@ -833,7 +833,174 @@ async function checkFinishLineJD(m){
     };
   }
 }
-async function checkOne(m){
+async function checkChampsSports(m){
+  const checkedAt = new Date().toISOString();
+
+  if(!m.url){
+    return {
+      ...m,
+      status:'needs-url',
+      message:'Champs Sports monitor requires a direct product URL.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  let u;
+  try{
+    u = new URL(m.url);
+  }catch{
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'Champs Sports product URL is invalid.',
+      checkedAt,
+      price:null
+    };
+  }
+  const host = u.hostname.toLowerCase();
+
+  if(!(host === 'champssports.com' ||
+       host.endsWith('.champssports.com'))){
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'Monitor requires a Champs Sports URL.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  try{
+    const ctrl = new AbortController();
+    const timeout = setTimeout(()=>ctrl.abort(),12000);
+
+    const r = await fetch(u.toString(),{
+      redirect:'follow',
+      signal:ctrl.signal,
+      headers:{
+        'user-agent':'Mozilla/5.0',
+        'accept':'text/html,application/xhtml+xml'
+      }
+    });
+
+    clearTimeout(timeout);    const text = (await r.text()).slice(0,1000000);
+
+    if(!r.ok){
+      return {
+        ...m,
+        status:'http-' + r.status,
+        message:'Champs Sports returned HTTP ' + r.status + '.',
+        checkedAt,
+        price:null
+      };
+    }
+
+    const lower = text.toLowerCase();
+    const price = extractPrice(text);
+    const target = String(m.size || '').trim().toLowerCase();
+
+    if(m.sku && !lower.includes(String(m.sku).toLowerCase())){
+      return {
+        ...m,
+        status:'product-mismatch',
+        message:'Champs Sports page loaded, but the saved SKU/style code was not found.',
+        checkedAt,
+        price
+      };
+    }    if(target){
+      const sizeTokens = [
+        `"size":"${target}"`,
+        `"displaySize":"${target}"`,
+        `"value":"${target}"`,
+        `size ${target}`
+      ];
+
+      const hasSize = sizeTokens.some(x => lower.includes(x));
+
+      if(hasSize && (
+        lower.includes('"available":true') ||
+        lower.includes('"instock":true') ||
+        lower.includes('"status":"available"')
+      )){
+        return {
+          ...m,
+          status:'available',
+          message:`Champs Sports shows size ${m.size} as available.`,
+          checkedAt,
+          price
+        };
+      }
+
+      if(hasSize && (
+        lower.includes('"available":false') ||
+        lower.includes('"instock":false') ||
+        lower.includes('"status":"unavailable"')
+      )){
+        return {
+          ...m,
+          status:'out-of-stock',
+          message:`Champs Sports shows size ${m.size} as unavailable.`,
+          checkedAt,
+          price
+        };
+      }
+    }    const negative = [
+      'sold out',
+      'out of stock',
+      'currently unavailable',
+      'not available'
+    ];
+
+    if(negative.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'out-of-stock',
+        message:'Champs Sports page indicates the product is not currently available.',
+        checkedAt,
+        price
+      };
+    }
+
+    const positive = [
+      'add to cart',
+      'add to bag',
+      'select size',
+      'choose size'
+    ];
+
+    if(!target && positive.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'available',
+        message:'Champs Sports page shows a purchase/availability indicator.',
+        checkedAt,
+        price
+      };
+    }
+
+    return {
+      ...m,
+      status:'unknown',
+      message:target
+        ? `Champs Sports page loaded, but availability for size ${m.size} could not be confirmed reliably.`
+        : 'Champs Sports page loaded, but availability could not be confirmed reliably.',
+      checkedAt,
+      price
+    };
+
+  }catch(e){
+    return {
+      ...m,
+      status:e.name === 'AbortError' ? 'timeout' : 'unreachable',
+      message:e.name === 'AbortError'
+        ? 'Champs Sports request timed out.'
+        : 'Could not fetch Champs Sports product page: ' + e.message,
+      checkedAt,
+      price:null
+    };
+  }
+}async function checkOne(m){
   if(m.store === 'Nike / SNKRS'){
   const nikeResult = await checkNikeSNKRS(m);
   if(nikeResult) return nikeResult;
@@ -848,6 +1015,10 @@ if(m.store === 'adidas'){
 if(m.store === 'Finish Line / JD Sports'){
   const finishLineJDResult = await checkFinishLineJD(m);
   if(finishLineJDResult) return finishLineJDResult;
+}
+if(m.store === 'Champs Sports'){
+  const champsResult = await checkChampsSports(m);
+  if(champsResult) return champsResult;
 }
     console.log('[DropBot] checking monitor:', m.name, m.store, m.url);
   const checkedAt=new Date().toISOString();
