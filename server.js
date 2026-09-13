@@ -102,8 +102,24 @@ if(!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_FROM_NUMBER || !ALERT_TO
 }
 
 function extractPrice(text){
-  const m=text.match(/(?:\$|USD\s*)\s?([0-9]{1,5}(?:\.[0-9]{2})?)/i);
-  return m ? '$'+m[1] : null;
+  const patterns = [
+    /"currentPrice"\s*:\s*([0-9]+(?:\.[0-9]{1,2})?)/i,
+    /"salePrice"\s*:\s*([0-9]+(?:\.[0-9]{1,2})?)/i,
+    /"fullPrice"\s*:\s*([0-9]+(?:\.[0-9]{1,2})?)/i,
+    /"price"\s*:\s*([0-9]+(?:\.[0-9]{1,2})?)/i
+  ];
+
+  for(const pattern of patterns){
+    const m = text.match(pattern);
+    if(m){
+      const value = Number(m[1]);
+      if(value >= 20 && value <= 1000){
+        return '$' + value.toFixed(2);
+      }
+    }
+  }
+
+  return null;
 }
 function inferAvailability(text){
   const t=text.toLowerCase();
