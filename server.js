@@ -476,6 +476,183 @@ async function checkAdidas(m){
     };
   }
 }
+async function checkFootLocker(m){
+  const checkedAt = new Date().toISOString();
+
+  if(!m.url){
+    return {
+      ...m,
+      status:'needs-url',
+      message:'Foot Locker monitor requires a direct Foot Locker product URL.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  let u;
+  try{
+    u = new URL(m.url);
+  }catch{
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'Foot Locker product URL is invalid.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  const host = u.hostname.toLowerCase();
+
+  if(!(host === 'footlocker.com' || host.endsWith('.footlocker.com'))){
+    return {
+      ...m,
+      status:'invalid-url',
+      message:'Foot Locker monitor requires a footlocker.com product URL.',
+      checkedAt,
+      price:null
+    };
+  }
+
+  try{
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort(), 12000);
+
+    const r = await fetch(u.toString(),{
+      redirect:'follow',
+      signal:ctrl.signal,
+      headers:{
+        'user-agent':'DropBot/4.0 (+product availability monitor; respectful polling)',
+        'accept':'text/html,application/xhtml+xml,application/json;q=0.8,*/*;q=0.5',
+        'accept-language':'en-US,en;q=0.8'
+      }
+    });
+
+    clearTimeout(timeout);
+
+    const text = (await r.text()).slice(0,1000000);
+
+    if(!r.ok){
+      return {
+        ...m,
+        status:'http-' + r.status,
+        message:'Foot Locker returned HTTP ' + r.status + '.',
+        checkedAt,
+        price:null
+      };
+    }
+
+    const lower = text.toLowerCase();
+    const price = extractPrice(text);
+    const target = String(m.size || '').trim().toLowerCase();
+
+    if(m.sku && !lower.includes(String(m.sku).toLowerCase())){
+      return {
+        ...m,
+        status:'product-mismatch',
+        message:'Foot Locker page loaded, but the saved SKU/style code was not found.',
+        checkedAt,
+        price
+      };
+    }
+
+    if(target){
+      const sizeTokens = [
+        `"size":"${target}"`,
+        `"displaySize":"${target}"`,
+        `"value":"${target}"`,
+        `size ${target}`
+      ];
+
+      const hasSize = sizeTokens.some(x => lower.includes(x));
+
+      if(hasSize && (
+        lower.includes('"available":true') ||
+        lower.includes('"inStock":true'.toLowerCase()) ||
+        lower.includes('"inventoryStatus":"in_stock"'.toLowerCase()) ||
+        lower.includes('"status":"available"')
+      )){
+        return {
+          ...m,
+          status:'available',
+          message:`Foot Locker shows size ${m.size} as available.`,
+          checkedAt,
+          price
+        };
+      }
+
+      if(hasSize && (
+        lower.includes('"available":false') ||
+        lower.includes('"inStock":false'.toLowerCase()) ||
+        lower.includes('"inventoryStatus":"out_of_stock"'.toLowerCase()) ||
+        lower.includes('"status":"unavailable"')
+      )){
+        return {
+          ...m,
+          status:'out-of-stock',
+          message:`Foot Locker shows size ${m.size} as unavailable.`,
+          checkedAt,
+          price
+        };
+      }
+    }
+
+    const negative = [
+      'sold out',
+      'out of stock',
+      'currently unavailable',
+      'not available'
+    ];
+
+    if(negative.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'out-of-stock',
+        message:'Foot Locker page indicates the product is not currently available.',
+        checkedAt,
+        price
+      };
+    }
+
+    const positive = [
+      'add to cart',
+      'add to bag',
+      'select size',
+      'pick a size'
+    ];
+
+    if(!target && positive.some(x => lower.includes(x))){
+      return {
+        ...m,
+        status:'available',
+        message:'Foot Locker page shows a purchase/availability indicator.',
+        checkedAt,
+        price
+      };
+    }
+
+    return {
+      ...m,
+      status:'unknown',
+      message:target
+        ? `Foot Locker page loaded, but availability for size ${m.size} could not be confirmed reliably.`
+        : 'Foot Locker page loaded, but availability could not be confirmed reliably.',
+      checkedAt,
+      price
+    };
+
+  }catch(e){
+    return {
+      ...m,
+      status:e.name === 'AbortError' ? 'timeout' : 'unreachable',
+      message:e.name === 'AbortError'
+        ? 'Foot Locker request timed out.'
+        : 'Could not fetch Foot Locker product page: ' + e.message,
+      checkedAt,
+      price:null
+    };
+  }
+}
 async function checkOne(m){
   if(m.store === 'Nike / SNKRS'){
   const nikeResult = await checkNikeSNKRS(m);
@@ -484,6 +661,9 @@ async function checkOne(m){
 if(m.store === 'adidas'){
   const adidasResult = await checkAdidas(m);
   if(adidasResult) return adidasResult;
+}if(m.store === 'Foot Locker'){
+  const footLockerResult = await checkFootLocker(m);
+  if(footLockerResult) return footLockerResult;
 }
     console.log('[DropBot] checking monitor:', m.name, m.store, m.url);
   const checkedAt=new Date().toISOString();
